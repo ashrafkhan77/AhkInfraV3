@@ -1,0 +1,987 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AHK Infra — Steel Structure Detailing & Engineering</title>
+<link rel="icon" href="images/logo.png" type="image/png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#0A1A32;
+    --navy-2:#0F2340;
+    --navy-3:#16305A;
+    --blue:#2E6FD9;
+    --blue-light:#5B9BFF;
+    --cyan:#3EC6D9;
+    --amber:#E3A542;
+    --amber-light:#F4C368;
+    --bg:#0A1A32;
+    --card:#0F2340;
+    --line:rgba(255,255,255,0.09);
+    --text:#EDF2FB;
+    --muted:#93A5C7;
+  }
+  *{margin:0; padding:0; box-sizing:border-box;}
+  html{scroll-behavior:smooth; scrollbar-color:var(--navy-3) var(--navy);}
+  body{
+    font-family:'Inter', sans-serif;
+    background:var(--bg);
+    color:var(--text);
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+    position:relative;
+  }
+  body::before{
+    content:""; position:fixed; inset:0; z-index:9998; pointer-events:none; opacity:0.035; mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  ::-webkit-scrollbar{width:10px;}
+  ::-webkit-scrollbar-track{background:var(--navy);}
+  ::-webkit-scrollbar-thumb{background:var(--navy-3); border-radius:10px; border:2px solid var(--navy);}
+  ::-webkit-scrollbar-thumb:hover{background:var(--amber);}
+  ::selection{background:var(--amber); color:#1A1200;}
+  h1,h2,h3,h4{font-family:'Sora', sans-serif; font-weight:700; letter-spacing:-0.02em; color:#fff;}
+  .mono{font-family:'JetBrains Mono', monospace;}
+  a{text-decoration:none; color:inherit;}
+  img{display:block; max-width:100%;}
+  ul{list-style:none;}
+  .wrap{max-width:1200px; margin:0 auto; padding:0 32px;}
+  .grad-text{color:var(--amber);}
+
+  .scroll-progress{position:fixed; top:0; left:0; height:2.5px; width:0%; background:linear-gradient(90deg,var(--amber),var(--amber-light)); z-index:200; box-shadow:0 0 8px rgba(227,165,66,0.6);}
+
+  /* CORNER FRAME — signature blueprint-sheet accent */
+  .corner-frame{position:relative;}
+  .corner-frame::before, .corner-frame::after{
+    content:""; position:absolute; width:26px; height:26px; pointer-events:none; z-index:4;
+  }
+  .corner-frame::before{top:12px; left:12px; border-top:2px solid var(--amber); border-left:2px solid var(--amber); opacity:0.85;}
+  .corner-frame::after{bottom:12px; right:12px; border-bottom:2px solid var(--amber); border-right:2px solid var(--amber); opacity:0.85;}
+
+  /* NAV */
+  header{
+    position:fixed; top:0; left:0; right:0; z-index:100;
+    padding:20px 0; transition:background .3s, box-shadow .3s, padding .3s;
+  }
+  header.scrolled{background:rgba(10,26,50,0.94); backdrop-filter:blur(10px); box-shadow:0 8px 30px rgba(0,0,0,0.35); padding:12px 0;}
+  nav{display:flex; align-items:center; justify-content:space-between;}
+  .logo{display:flex; align-items:center; gap:10px; color:#fff; font-family:'Sora'; font-weight:800; font-size:19px;}
+  .logo img{height:42px; width:auto;}
+  .nav-links{display:flex; gap:32px; font-size:14.5px; font-weight:500;}
+  .nav-links a{color:rgba(255,255,255,0.8); transition:color .2s; position:relative; padding-bottom:5px;}
+  .nav-links a::after{content:""; position:absolute; left:0; bottom:0; width:0; height:1.5px; background:var(--amber); transition:width .25s ease;}
+  .nav-links a:hover{color:#fff;}
+  .nav-links a:hover::after{width:100%;}
+  .nav-cta{
+    position:relative; overflow:hidden;
+    background:linear-gradient(90deg,var(--amber),#C97F1E); color:#1A1200; font-weight:700; font-size:13.5px;
+    padding:11px 22px; border-radius:8px; box-shadow:0 8px 20px rgba(227,165,66,0.3); transition:transform .2s;
+  }
+  .nav-cta:hover{transform:translateY(-2px);}
+  .nav-toggle{display:none; background:none; border:none; color:#fff; font-size:24px; cursor:pointer;}
+
+  /* HERO */
+  .hero{
+    position:relative; min-height:92vh; display:flex; align-items:center; overflow:hidden;
+    background:var(--navy); padding-top:90px;
+  }
+  .hero-art{position:absolute; inset:0; z-index:0; overflow:hidden;}
+  .hero-art img{position:absolute; top:-12%; left:0; width:100%; height:124%; object-fit:cover; object-position:center 35%; will-change:transform;}
+  .hero-art::after{
+    content:""; position:absolute; inset:0;
+    background:rgba(10,30,74,0.22); mix-blend-mode:multiply;
+  }
+  .hero::after{
+    content:""; position:absolute; inset:0; z-index:1; background:
+      linear-gradient(100deg, rgba(4,16,40,0.96) 0%, rgba(4,16,40,0.9) 42%, rgba(7,26,61,0.45) 66%, rgba(7,26,61,0.1) 88%);
+    pointer-events:none;
+  }
+  .hero-inner{
+    position:relative; z-index:2; max-width:760px; margin:0;
+    padding-left:clamp(32px,6vw,80px); padding-right:24px;
+  }
+  .eyebrow{
+    display:inline-flex; align-items:center; gap:10px; color:var(--amber-light); font-family:'JetBrains Mono';
+    font-size:12.5px; letter-spacing:0.14em; text-transform:uppercase; margin-bottom:26px;
+    border:1px solid rgba(227,165,66,0.4); padding:8px 16px; border-radius:30px; background:rgba(227,165,66,0.08); width:fit-content;
+  }
+  .hero h1{display:flex; gap:18px; align-items:stretch;}
+  .hero h1 .accent-bar{width:4px; background:var(--amber); border-radius:2px; flex:none;}
+  .hero h1 .heading-lines{color:#fff; font-size:clamp(34px,4.4vw,52px); line-height:1.18; margin-bottom:24px;}
+  .hero p.lede{color:rgba(255,255,255,0.8); font-size:16.5px; line-height:1.7; max-width:520px; margin-bottom:38px;}
+  .btn-row{display:flex; gap:16px; flex-wrap:wrap;}
+  .btn{
+    display:inline-flex; align-items:center; gap:8px; padding:15px 28px; border-radius:8px;
+    font-weight:600; font-size:14.5px; transition:transform .2s, box-shadow .2s; position:relative; overflow:hidden;
+  }
+  .btn-primary{background:linear-gradient(90deg,var(--amber),#C97F1E); color:#1A1200; box-shadow:0 12px 28px rgba(227,165,66,0.3);}
+  .btn-primary::after{
+    content:""; position:absolute; top:0; left:-60%; width:40%; height:100%;
+    background:linear-gradient(120deg, transparent, rgba(255,255,255,0.45), transparent); transform:skewX(-20deg); transition:left .55s ease;
+  }
+  .btn-primary:hover{transform:translateY(-3px); box-shadow:0 16px 34px rgba(227,165,66,0.4);}
+  .btn-primary:hover::after{left:120%;}
+  .btn-outline{border:1.5px solid rgba(255,255,255,0.35); color:#fff;}
+  .btn-outline:hover{background:rgba(255,255,255,0.12); border-color:#fff;}
+
+  .hero-glow{
+    position:absolute; inset:0; z-index:1; pointer-events:none; opacity:0; transition:opacity .4s;
+    background:radial-gradient(360px circle at var(--mx,50%) var(--my,50%), rgba(227,165,66,0.16), transparent 70%);
+  }
+  .hero:hover .hero-glow{opacity:1;}
+
+  .hero-badge{
+    position:absolute; z-index:3; right:clamp(20px,4vw,64px); bottom:56px;
+    display:flex; align-items:center; gap:14px; background:rgba(10,20,40,0.82); backdrop-filter:blur(10px);
+    border:1px solid rgba(227,165,66,0.35); border-radius:14px; padding:16px 20px; box-shadow:0 20px 50px rgba(0,0,0,0.35);
+  }
+  .hero-badge .icon{width:42px; height:42px; border-radius:10px; background:rgba(227,165,66,0.14); display:flex; align-items:center; justify-content:center; color:var(--amber); flex:none;}
+  .hero-badge .icon svg{width:22px; height:22px;}
+  .hero-badge .num{font-family:'Sora'; font-weight:800; font-size:22px; color:var(--amber-light); line-height:1.1;}
+  .hero-badge .label{color:rgba(255,255,255,0.75); font-size:11.5px; text-transform:uppercase; letter-spacing:0.05em; font-family:'JetBrains Mono';}
+
+  /* CAPABILITY STRIP */
+  .capabilities{padding:64px 0 16px;}
+  .cap-card{
+    background:var(--navy-2); border:1px solid var(--line); border-radius:20px; padding:42px 36px;
+    display:grid; grid-template-columns:repeat(4,1fr); gap:36px; box-shadow:0 30px 60px rgba(0,0,0,0.3);
+  }
+  .cap-item .icon{width:46px; height:46px; border-radius:10px; background:rgba(227,165,66,0.12); display:flex; align-items:center; justify-content:center; color:var(--amber); margin-bottom:16px;}
+  .cap-item .icon svg{width:24px; height:24px;}
+  .cap-item h4{font-size:15px; margin-bottom:8px;}
+  .cap-item p{color:var(--muted); font-size:13.5px; line-height:1.6;}
+
+  /* STATS STRIP */
+  .stats-strip{background:var(--navy-2); padding:56px 0; border-top:1px solid var(--line); border-bottom:1px solid var(--line);}
+  .stats-row{display:grid; grid-template-columns:repeat(4,1fr);}
+  .stats-row div{text-align:center; border-right:1px solid var(--line);}
+  .stats-row div:last-child{border-right:none;}
+  .stat-num{font-family:'Sora'; font-weight:800; font-size:clamp(24px,3vw,34px); color:var(--amber);}
+  .stat-label{color:rgba(255,255,255,0.7); font-size:12px; text-transform:uppercase; letter-spacing:0.06em; margin-top:6px; font-family:'JetBrains Mono';}
+
+  section{padding:100px 0;}
+  .tag{
+    display:inline-flex; align-items:center; gap:8px; color:var(--amber); font-family:'JetBrains Mono'; font-size:12.5px;
+    letter-spacing:0.1em; text-transform:uppercase; margin-bottom:14px;
+  }
+  .tag::before{content:""; width:20px; height:2px; background:var(--amber); border-radius:2px;}
+  .tag .sheet-no{color:var(--muted); font-weight:400; opacity:0.75;}
+  .section-title{font-size:clamp(28px,3.4vw,40px); margin-bottom:16px; max-width:640px;}
+  .section-sub{color:var(--muted); font-size:16px; max-width:560px; line-height:1.6;}
+
+  /* ABOUT */
+  .about{background:var(--card);}
+  .about-grid{display:grid; grid-template-columns:1fr 1fr; gap:64px; align-items:center;}
+  .about-art{position:relative; border-radius:20px; overflow:hidden; box-shadow:0 30px 60px rgba(0,0,0,0.4);}
+  .about-art img{width:100%; height:480px; object-fit:cover;}
+  .about-art-badge{
+    position:absolute; bottom:20px; left:20px; background:rgba(10,20,40,0.85); backdrop-filter:blur(8px);
+    color:#fff; padding:14px 20px; border-radius:12px; font-family:'JetBrains Mono'; font-size:12.5px;
+    border:1px solid rgba(227,165,66,0.3);
+  }
+  .about-text p{color:var(--muted); font-size:15.5px; line-height:1.7; margin-bottom:18px;}
+  .checklist{display:grid; grid-template-columns:1fr 1fr; gap:12px 20px; margin-top:26px;}
+  .checklist li{display:flex; gap:10px; align-items:flex-start; font-size:14.5px; color:var(--text);}
+  .checklist svg{flex:none; width:18px; height:18px; color:var(--amber); margin-top:2px;}
+  .values-row{display:flex; gap:32px; margin-top:34px; flex-wrap:wrap;}
+  .value-pill{display:flex; align-items:center; gap:10px; font-family:'Sora'; font-weight:700; font-size:15px; color:#fff;}
+  .value-pill span.dot{width:8px; height:8px; border-radius:50%; background:var(--amber);}
+
+  /* PHOTO BREAK / MISSION BAND */
+  .photo-break{position:relative; min-height:64vh; display:flex; align-items:center; overflow:hidden; padding:90px 0;}
+  .photo-break-bg{position:absolute; inset:0; z-index:0; overflow:hidden;}
+  .photo-break-bg img{position:absolute; top:-14%; left:0; width:100%; height:128%; object-fit:cover; object-position:center 28%; will-change:transform;}
+  .photo-break-overlay{
+    position:absolute; inset:0; z-index:1;
+    background:linear-gradient(100deg, rgba(4,16,40,0.93) 12%, rgba(7,26,61,0.62) 48%, rgba(7,26,61,0.22) 100%);
+  }
+  .photo-break-inner{position:relative; z-index:2; max-width:600px;}
+  .photo-break-eyebrow{color:var(--amber-light); letter-spacing:0.14em; font-size:12px; margin-bottom:16px; text-transform:uppercase;}
+  .photo-break h2{color:#fff; font-size:clamp(24px,3.1vw,34px); margin-bottom:18px; line-height:1.28;}
+  .photo-break p{color:rgba(255,255,255,0.82); font-size:15.5px; line-height:1.75; max-width:480px;}
+  .photo-break .signoff{margin-top:26px; display:flex; align-items:center; gap:12px; color:rgba(255,255,255,0.6); font-size:13px; font-family:'JetBrains Mono';}
+  .photo-break .signoff span.line{width:34px; height:1px; background:rgba(255,255,255,0.35);}
+
+  /* TESTIMONIALS */
+  .testimonials-band{position:relative; overflow:hidden;}
+  .testimonials-bg{position:absolute; inset:0; z-index:0; overflow:hidden;}
+  .testimonials-bg img{position:absolute; top:-14%; left:0; width:100%; height:128%; object-fit:cover; object-position:center 42%; will-change:transform;}
+  .testimonials-overlay{
+    position:absolute; inset:0; z-index:1;
+    background:linear-gradient(180deg, rgba(6,16,34,0.93) 0%, rgba(10,26,50,0.9) 55%, rgba(6,16,34,0.95) 100%);
+  }
+  .testimonials-inner{position:relative; z-index:2;}
+  .testimonial-grid{display:grid; grid-template-columns:repeat(2,1fr); gap:28px; margin-top:44px;}
+  .testimonial-card{
+    background:rgba(15,35,64,0.55); backdrop-filter:blur(12px); border:1px solid rgba(255,255,255,0.12);
+    border-radius:18px; padding:34px 32px; transition:transform .3s, border-color .3s;
+  }
+  .testimonial-card:hover{transform:translateY(-4px); border-color:rgba(227,165,66,0.35);}
+  .quote-mark{width:36px; height:26px; color:var(--amber); margin-bottom:18px; opacity:0.9; display:block;}
+  .quote-text{font-family:'Sora'; font-weight:700; font-size:19px; color:#fff; line-height:1.5; margin-bottom:22px;}
+  .quote-author h5{font-size:14.5px;}
+  .quote-author span{color:var(--muted); font-size:12.5px;}
+
+  /* SERVICES */
+  .services{background:var(--bg);}
+  .service-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:24px; margin-top:52px;}
+  .service-card{
+    background:var(--card); border-radius:18px; padding:32px 28px; border:1px solid var(--line);
+    transition:transform .3s, box-shadow .3s; position:relative; overflow:hidden;
+  }
+  .service-card::before{
+    content:""; position:absolute; top:0; left:0; right:0; height:4px;
+    background:var(--amber);
+    transform:scaleX(0); transform-origin:left; transition:transform .3s;
+  }
+  .service-card:hover{transform:translateY(-8px); box-shadow:0 24px 48px rgba(0,0,0,0.35); border-color:rgba(227,165,66,0.3);}
+  .service-card:hover::before{transform:scaleX(1);}
+  .service-card:nth-child(3n+2)::before{background:var(--amber-light);}
+  .service-card:nth-child(3n+3)::before{background:#C97F1E;}
+  .service-card:nth-child(3n+2) .service-icon{background:rgba(244,195,104,0.14); color:var(--amber-light);}
+  .service-card:nth-child(3n+3) .service-icon{background:rgba(201,127,30,0.16); color:#D9954A;}
+  .service-icon{
+    width:52px; height:52px; border-radius:12px; display:flex; align-items:center; justify-content:center;
+    background:rgba(227,165,66,0.12); color:var(--amber); margin-bottom:20px;
+  }
+  .service-icon svg{width:26px; height:26px;}
+  .service-card h3{font-size:18.5px; margin-bottom:10px;}
+  .service-card p{color:var(--muted); font-size:14.5px; line-height:1.6;}
+
+  .tools-strip{
+    margin-top:56px; background:var(--navy-2); border:1px solid var(--line); border-radius:18px; padding:30px 40px;
+    display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:20px;
+  }
+  .tools-strip h4{color:#fff; font-size:15px; font-family:'JetBrains Mono'; font-weight:400; letter-spacing:0.04em;}
+  .tools-list{display:flex; gap:14px; flex-wrap:wrap;}
+  .tools-list span{
+    font-family:'JetBrains Mono'; font-size:12.5px; color:var(--amber-light); border:1px solid rgba(227,165,66,0.35);
+    padding:8px 14px; border-radius:8px; background:rgba(227,165,66,0.08);
+  }
+
+  /* STANDARDS */
+  .standards{background:var(--card);}
+  .standards-split{display:grid; grid-template-columns:0.85fr 1.15fr; gap:64px; align-items:center;}
+  .standards-art{position:relative; border-radius:20px; overflow:hidden; box-shadow:0 30px 60px rgba(0,0,0,0.4); height:440px;}
+  .standards-art img{width:100%; height:100%; object-fit:cover;}
+  .standards-list{margin-top:28px;}
+  .standards-list li{display:flex; align-items:baseline; gap:22px; padding:19px 0; border-top:1px solid var(--line);}
+  .standards-list li:last-child{border-bottom:1px solid var(--line);}
+  .standards-list .letters{font-family:'Sora'; font-weight:800; font-size:19px; color:var(--amber); min-width:98px; flex:none;}
+  .standards-list p{color:var(--muted); font-size:14.5px;}
+
+  /* SAMPLES */
+  .work{background:var(--bg);}
+  .sample-filters{display:flex; gap:10px; margin:36px 0 8px; flex-wrap:wrap;}
+  .sample-filter{
+    font-family:'JetBrains Mono'; font-size:12.5px; padding:9px 18px; border-radius:30px; cursor:pointer;
+    border:1px solid var(--line); background:var(--card); color:var(--muted); transition:all .2s;
+  }
+  .sample-filter.active, .sample-filter:hover{background:var(--amber); color:#1A1200; border-color:var(--amber);}
+  .sample-grid{display:grid; grid-template-columns:repeat(5,1fr); gap:18px; margin-top:28px;}
+  .sample-card{
+    position:relative; border-radius:14px; overflow:hidden; background:var(--card); border:1px solid var(--line);
+    transition:transform .3s, box-shadow .3s; cursor:pointer;
+  }
+  .sample-card:hover{transform:translateY(-6px); box-shadow:0 20px 40px rgba(0,0,0,0.4); border-color:rgba(227,165,66,0.3);}
+  .sample-thumb{aspect-ratio:4/3; overflow:hidden; background:#fff;}
+  .sample-thumb img{width:100%; height:100%; object-fit:cover; object-position:top; transition:transform .4s;}
+  .sample-card:hover .sample-thumb img{transform:scale(1.06);}
+  .sample-info{padding:14px 16px; display:flex; align-items:center; justify-content:space-between;}
+  .sample-info h5{font-size:13.5px;}
+  .sample-info span{color:var(--muted); font-size:10.5px; text-transform:uppercase; letter-spacing:0.05em; font-family:'JetBrains Mono';}
+  .sample-download{
+    width:30px; height:30px; border-radius:50%; background:var(--navy-3); display:flex; align-items:center; justify-content:center;
+    color:var(--amber); flex:none; transition:background .2s, color .2s;
+  }
+  .sample-download:hover{background:var(--amber); color:#1A1200;}
+  .sample-download svg{width:14px; height:14px;}
+
+  /* TEAM */
+  .team{background:var(--card);}
+  .team-grid{display:grid; grid-template-columns:repeat(2,1fr); gap:24px; margin-top:48px;}
+  .team-card{
+    display:flex; gap:20px; align-items:center; padding:26px; border-radius:16px; border:1px solid var(--line);
+    background:linear-gradient(135deg,var(--navy-2),var(--navy-3)); transition:box-shadow .3s, transform .3s;
+  }
+  .team-card:hover{box-shadow:0 20px 40px rgba(0,0,0,0.35); transform:translateY(-4px); border-color:rgba(227,165,66,0.25);}
+  .avatar{
+    width:74px; height:74px; border-radius:50%; flex:none; overflow:hidden;
+    border:3px solid var(--navy-3); box-shadow:0 6px 16px rgba(0,0,0,0.3); background:var(--navy-3);
+  }
+  .avatar img{width:100%; height:100%; border-radius:50%; object-fit:cover; object-position:center 25%; transform:scale(0.88);}
+  .team-card h4{font-size:17px;}
+  .team-card .role{color:var(--amber); font-size:12.5px; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; margin:4px 0 10px;}
+  .team-card .links{display:flex; gap:14px; font-size:13px; color:var(--muted);}
+  .team-card .links a:hover{color:var(--amber);}
+
+  /* CTA BAND */
+  .cta-band{
+    border-radius:24px; margin:0 32px; padding:80px 50px; text-align:center; position:relative; overflow:hidden;
+  }
+  .cta-bg{position:absolute; inset:0; z-index:0; overflow:hidden; background:var(--navy);}
+  .cta-bg img{position:absolute; top:-16%; left:0; width:100%; height:132%; object-fit:cover; object-position:center 40%; will-change:transform;}
+  .cta-overlay{position:absolute; inset:0; z-index:1; background:linear-gradient(120deg, rgba(4,14,36,0.94), rgba(120,80,20,0.55) 130%);}
+  .cta-content{position:relative; z-index:2;}
+  .cta-band h2{color:#fff; font-size:clamp(26px,3.4vw,38px); max-width:600px; margin:0 auto 16px;}
+  .cta-band p{color:rgba(255,255,255,0.82); max-width:520px; margin:0 auto 34px;}
+  .cta-band .btn-row{justify-content:center; margin-bottom:0;}
+
+  /* CONTACT */
+  .contact{padding-top:110px;}
+  .contact-grid{display:grid; grid-template-columns:1fr 1fr; gap:56px; margin-top:48px;}
+  .contact-cards{display:flex; flex-direction:column; gap:18px;}
+  .contact-card{
+    display:flex; gap:16px; padding:22px; border-radius:14px; background:var(--card); border:1px solid var(--line);
+  }
+  .contact-card .icon{
+    width:44px; height:44px; border-radius:10px; background:rgba(227,165,66,0.12);
+    display:flex; align-items:center; justify-content:center; flex:none; color:var(--amber);
+  }
+  .contact-card .icon svg{width:20px; height:20px;}
+  .contact-card h5{font-size:14.5px; margin-bottom:6px;}
+  .contact-card p, .contact-card a{font-size:13.5px; color:var(--muted); display:block; line-height:1.6;}
+  .contact-card a:hover{color:var(--amber);}
+
+  .contact-maps{display:grid; grid-template-columns:1fr 1fr; gap:24px; margin-top:48px;}
+  .map-card{border-radius:14px; overflow:hidden; border:1px solid var(--line); background:var(--card);}
+  .map-card iframe{width:100%; height:220px; display:block; border:0;}
+  .map-card h5{font-size:13px; padding:14px 18px; border-top:1px solid var(--line);}
+
+  .contact-form{background:var(--card); border:1px solid var(--line); border-radius:18px; padding:36px; box-shadow:0 20px 50px rgba(0,0,0,0.3);}
+  .contact-form h3{margin-bottom:6px;}
+  .contact-form p.hint{color:var(--muted); font-size:13.5px; margin-bottom:24px;}
+  .form-row{display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:14px;}
+  .contact-form input, .contact-form textarea{
+    width:100%; padding:13px 15px; border:1px solid var(--line); border-radius:10px; font-family:'Inter';
+    font-size:14px; background:rgba(255,255,255,0.04); color:var(--text); transition:border-color .2s;
+  }
+  .contact-form input::placeholder, .contact-form textarea::placeholder{color:var(--muted);}
+  .contact-form input:focus, .contact-form textarea:focus{outline:none; border-color:var(--amber);}
+  .contact-form textarea{resize:vertical; min-height:100px; margin-bottom:18px;}
+  .form-submit{
+    width:100%; padding:15px; border:none; border-radius:10px; background:linear-gradient(90deg,var(--amber),#C97F1E);
+    color:#1A1200; font-weight:700; font-size:14.5px; cursor:pointer; transition:opacity .2s;
+  }
+  .form-submit:hover{opacity:0.9;}
+  .form-note{font-size:12.5px; color:var(--muted); margin-top:12px; display:none;}
+  .form-note.show{display:block; color:var(--amber-light); font-weight:600;}
+
+  /* FOOTER */
+  footer{
+    position:relative; overflow:hidden;
+    background:#060D1B; color:rgba(255,255,255,0.75); padding:70px 0 30px; margin-top:100px;
+    border-top:1px solid rgba(227,165,66,0.22);
+  }
+  footer::before{
+    content:""; position:absolute; z-index:0; top:-220px; left:50%; transform:translateX(-50%);
+    width:640px; height:420px; background:radial-gradient(ellipse, rgba(227,165,66,0.14), transparent 70%);
+    pointer-events:none;
+  }
+  footer::after{
+    content:""; position:absolute; z-index:0; inset:0; pointer-events:none; opacity:0.05;
+    background-image:
+      linear-gradient(rgba(227,165,66,0.6) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(227,165,66,0.6) 1px, transparent 1px);
+    background-size:48px 48px;
+  }
+  footer .wrap{position:relative; z-index:1;}
+  .foot-grid{display:grid; grid-template-columns:1.4fr 1fr 1fr 1fr; gap:32px; margin-bottom:50px;}
+  .foot-logo{display:flex; align-items:center; gap:10px; color:#fff; font-family:'Sora'; font-weight:800; font-size:19px; margin-bottom:14px;}
+  .foot-logo img{height:42px; width:auto;}
+  footer h5{color:#fff; font-family:'JetBrains Mono'; font-size:12px; text-transform:uppercase; letter-spacing:0.08em; margin-bottom:16px;}
+  footer li{margin-bottom:10px; font-size:14px;}
+  footer li a:hover{color:var(--amber);}
+  .social-row{display:flex; gap:10px; margin-top:18px;}
+  .social-row a{
+    width:36px; height:36px; border-radius:50%; border:1px solid rgba(255,255,255,0.2);
+    display:flex; align-items:center; justify-content:center; transition:background .2s;
+  }
+  .social-row a:hover{background:var(--amber); border-color:var(--amber);}
+  .social-row svg{width:16px; height:16px;}
+  .foot-bottom{border-top:1px solid rgba(227,165,66,0.15); padding-top:24px; display:flex; justify-content:space-between; font-size:12.5px; flex-wrap:wrap; gap:10px;}
+
+  [data-reveal]{opacity:0; transform:translateY(24px); transition:opacity .7s ease, transform .7s ease;}
+  [data-reveal].in{opacity:1; transform:translateY(0);}
+
+  @media (max-width:900px){
+    .wrap{padding:0 20px;}
+    .nav-links{display:none;}
+    .nav-toggle{display:block;}
+    .hero{min-height:auto; padding-bottom:60px; flex-direction:column; align-items:flex-start;}
+    .hero-badge{position:static; margin:36px 20px 0; width:fit-content;}
+    .cap-card{grid-template-columns:1fr 1fr; padding:32px 24px;}
+    .stats-row{grid-template-columns:repeat(2,1fr); row-gap:24px;}
+    .stats-row div:nth-child(2n){border-right:none;}
+    .about-grid{grid-template-columns:1fr;}
+    .checklist{grid-template-columns:1fr;}
+    .service-grid{grid-template-columns:1fr;}
+    .standards-split{grid-template-columns:1fr; gap:36px;}
+    .testimonial-grid{grid-template-columns:1fr;}
+    .standards-art{height:280px;}
+    .photo-break{min-height:auto; padding:70px 0;}
+    .sample-grid{grid-template-columns:repeat(2,1fr);}
+    .team-grid{grid-template-columns:1fr;}
+    .contact-grid{grid-template-columns:1fr;}
+    .contact-maps{grid-template-columns:1fr;}
+    .form-row{grid-template-columns:1fr;}
+    .foot-grid{grid-template-columns:1fr 1fr;}
+    .cta-band{margin:0 20px; padding:50px 24px;}
+  }
+  @media (max-width:600px){
+    .sample-grid{grid-template-columns:1fr 1fr;}
+    .cap-card{grid-template-columns:1fr;}
+  }
+</style>
+</head>
+<body>
+
+<div class="scroll-progress" id="scrollProgress"></div>
+
+<header id="siteHeader">
+  <nav class="wrap">
+    <a href="#home" class="logo">
+      <img src="images/logo.png" alt="AHK Infra logo">
+      AHK INFRA
+    </a>
+    <div class="nav-links">
+      <a href="#about">About</a>
+      <a href="#services">Services</a>
+      <a href="#work">Samples</a>
+      <a href="#team">Team</a>
+      <a href="#contact">Contact</a>
+    </div>
+    <a href="#contact" class="nav-cta">Get a Quote</a>
+    <button class="nav-toggle" id="navToggle">☰</button>
+  </nav>
+</header>
+
+<section class="hero" id="home">
+  <div class="hero-art">
+    <img class="parallax-img" src="images/hero-steel.jpg" alt="Modern skyscraper with exposed steel bracing against a clear blue sky">
+  </div>
+  <div class="hero-glow" id="heroGlow"></div>
+  <div class="wrap hero-inner">
+    <div class="eyebrow">ISO 9001:2015 Certified · Steel Structure Detailing</div>
+    <h1 data-reveal><span class="accent-bar"></span><span class="heading-lines">Precision steel detailing, <span class="grad-text">backed by real engineers.</span></span></h1>
+    <p class="lede" data-reveal>AHK Infra extends your engineering bench with skilled structural engineers for steel detailing, 3D TEKLA modelling, and the calculations and shop drawings your fabricator cuts from — accurate, on schedule, and built to code.</p>
+    <div class="btn-row" data-reveal>
+      <a href="#work" class="btn btn-primary">View Our Samples →</a>
+      <a href="#contact" class="btn btn-outline">Talk to Our Team</a>
+    </div>
+  </div>
+  <div class="hero-badge" data-reveal>
+    <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18M5 21V7l7-4 7 4v14M9 9h1M9 13h1M14 9h1M14 13h1M9 21v-4h6v4"/></svg></div>
+    <div>
+      <div class="num">45+</div>
+      <div class="label">Projects Delivered</div>
+    </div>
+  </div>
+</section>
+
+<section class="capabilities">
+  <div class="wrap">
+    <div class="cap-card" data-reveal>
+      <div class="cap-item">
+        <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M4 10h16M10 4v16"/></svg></div>
+        <h4>Structural Steel Detailing</h4>
+        <p>Connection-level detailing checked against AISC and AWS standards.</p>
+      </div>
+      <div class="cap-item">
+        <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 2l9 5-9 5-9-5 9-5zM3 12l9 5 9-5M3 17l9 5 9-5"/></svg></div>
+        <h4>3D Structural Modelling</h4>
+        <p>Full building models in TEKLA and X-STEEL, clash-checked before erection.</p>
+      </div>
+      <div class="cap-item">
+        <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 19V6a2 2 0 012-2h9l5 5v10a2 2 0 01-2 2H6a2 2 0 01-2-2z"/><path d="M14 4v5h5"/></svg></div>
+        <h4>Shop &amp; Erection Drawings</h4>
+        <p>Fabrication-ready drawings formatted the way your crew already works.</p>
+      </div>
+      <div class="cap-item">
+        <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg></div>
+        <h4>Dedicated Engineering Teams</h4>
+        <p>Skilled engineers assigned to your project, working within your schedule.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="about" id="about">
+  <div class="wrap about-grid">
+    <div class="about-art corner-frame" data-reveal>
+      <img src="images/office.jpg" alt="AHK Infra office">
+      <div class="about-art-badge">AISC · AWS · OSHA compliant</div>
+    </div>
+    <div class="about-text" data-reveal>
+      <div class="tag">Welcome to AHK Infra <span class="sheet-no">/ SHEET 01</span></div>
+      <h2 class="section-title">A steel detailing team that works while you sleep.</h2>
+      <p>We're a structural steel detailing organization built around one idea: give clients a team of talented engineers that feels like an extension of their own office. We're able to run day and night shifts when a project needs it, so your timeline never waits on a time zone.</p>
+      <p>Our engineers work across structural detailing, 3D steel modelling, and reinforced concrete design — turning architectural intent into fabrication-ready drawings clients can build from with confidence.</p>
+      <ul class="checklist">
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg> Structural &amp; steel detailing</li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg> TEKLA &amp; X-STEEL modelling</li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg> Structural calculations</li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg> Shop &amp; erection drawings</li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg> Pre-stressed structures</li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg> Moment &amp; bearing connections</li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg> Anchor bolts &amp; embeds</li>
+      </ul>
+      <div class="values-row">
+        <div class="value-pill"><span class="dot"></span>Affordable</div>
+        <div class="value-pill"><span class="dot"></span>Passion</div>
+        <div class="value-pill"><span class="dot"></span>Honesty</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="photo-break">
+  <div class="photo-break-bg">
+    <img class="parallax-img" src="images/photo-welder.jpg" alt="Steel fabricator welding a structural beam at height on a construction site">
+  </div>
+  <div class="photo-break-overlay"></div>
+  <div class="wrap photo-break-inner" data-reveal>
+    <div class="photo-break-eyebrow mono">Drawings built to be built from</div>
+    <h2>We hand you the model and the math — you cut the steel.</h2>
+    <p>Every beam, column, and connection is modelled in TEKLA and calculated before it ever leaves our desk, so your fabrication shop can cut straight from our drawings and your crew can erect straight from our plans — no guesswork, no back-and-forth.</p>
+    <div class="signoff"><span class="line"></span> AHK Infra detailing team</div>
+  </div>
+</section>
+
+<section class="services" id="services">
+  <div class="wrap">
+    <div class="tag" data-reveal>What we do <span class="sheet-no">/ SHEET 02</span></div>
+    <h2 class="section-title" data-reveal>Full-scope steel detailing, start to fabrication-ready drawings.</h2>
+    <p class="section-sub" data-reveal>From first model to final shop drawing, our team covers every stage of structural steel documentation.</p>
+    <div class="service-grid">
+      <div class="service-card" data-reveal>
+        <div class="service-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M4 10h16M10 4v16"/></svg></div>
+        <h3>Structural Steel Detailing</h3>
+        <p>Connection-level detailing for beams, columns, and braces, checked against AISC and AWS standards before it ever reaches the shop floor.</p>
+      </div>
+      <div class="service-card" data-reveal>
+        <div class="service-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 2l9 5-9 5-9-5 9-5zM3 12l9 5 9-5M3 17l9 5 9-5"/></svg></div>
+        <h3>3D Structural Modelling</h3>
+        <p>Full building models in TEKLA and X-STEEL, coordinated across disciplines to catch clashes long before erection.</p>
+      </div>
+      <div class="service-card" data-reveal>
+        <div class="service-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 19V6a2 2 0 012-2h9l5 5v10a2 2 0 01-2 2H6a2 2 0 01-2-2z"/><path d="M14 4v5h5"/></svg></div>
+        <h3>Shop &amp; Erection Drawings</h3>
+        <p>Fabrication-ready shop drawings and erection plans, formatted the way your shop floor and crew already work.</p>
+      </div>
+      <div class="service-card" data-reveal>
+        <div class="service-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 2v4M12 18v4M4.9 4.9l2.8 2.8M16.3 16.3l2.8 2.8M2 12h4M18 12h4M4.9 19.1l2.8-2.8M16.3 7.7l2.8-2.8"/></svg></div>
+        <h3>Connection Design</h3>
+        <p>Moment and bearing connections, anchor bolt layouts, and embed detailing engineered for real-world tolerances.</p>
+      </div>
+      <div class="service-card" data-reveal>
+        <div class="service-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M3 21h18M5 21V7l7-4 7 4v14M9 9h1M9 13h1M14 9h1M14 13h1M9 21v-4h6v4"/></svg></div>
+        <h3>Reinforced Concrete Design</h3>
+        <p>Structural analysis and reinforced concrete detailing for hybrid steel-concrete buildings and pre-stressed elements.</p>
+      </div>
+      <div class="service-card" data-reveal>
+        <div class="service-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg></div>
+        <h3>Dedicated Engineering Teams</h3>
+        <p>A team of skilled structural engineers assigned to your project, working inside your schedule — day and night shifts available for time-zone coverage.</p>
+      </div>
+    </div>
+
+    <div class="tools-strip" data-reveal>
+      <h4>Software &amp; file formats we work in:</h4>
+      <div class="tools-list">
+        <span>TEKLA</span><span>X-STEEL</span><span>AutoCAD</span><span>NC1</span><span>EJE</span><span>DXF</span><span>KSS</span><span>XML</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="standards" id="standards">
+  <div class="wrap standards-split">
+    <div class="standards-art corner-frame" data-reveal>
+      <img src="images/photo-standards.jpg" alt="Steel lattice framework viewed from below against a clear blue sky">
+    </div>
+    <div data-reveal>
+      <div class="tag">Guiding principles <span class="sheet-no">/ SHEET 03</span></div>
+      <h2 class="section-title">Held to the standards the industry actually checks.</h2>
+      <p class="section-sub">Every drawing set that leaves our floor is checked against the codes your fabricator and inspector will actually reference.</p>
+      <ul class="standards-list">
+        <li><span class="letters">AISC</span><p>American Institute of Steel Construction</p></li>
+        <li><span class="letters">AWS</span><p>American Welding Society</p></li>
+        <li><span class="letters">OSHA</span><p>Occupational Safety &amp; Health Administration</p></li>
+        <li><span class="letters">ISO 9001</span><p>Certified quality management system</p></li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section class="testimonials-band" id="testimonials">
+  <div class="testimonials-bg">
+    <img class="parallax-img" src="images/office.jpg" alt="AHK Infra office">
+  </div>
+  <div class="testimonials-overlay"></div>
+  <div class="wrap testimonials-inner">
+    <div class="tag" data-reveal>Client feedback</div>
+    <h2 class="section-title" data-reveal style="color:#fff;">What clients say after working with us.</h2>
+    <div class="testimonial-grid">
+      <div class="testimonial-card" data-reveal>
+        <svg class="quote-mark" viewBox="0 0 44 32" fill="currentColor"><path d="M0 32V16.7C0 6.6 6.8 0 17.6 0v6.4c-6 .3-9.5 3.6-9.9 8.6H14v17H0zm24 0V16.7C24 6.6 30.8 0 41.6 0v6.4c-6 .3-9.5 3.6-9.9 8.6H38v17H24z"/></svg>
+        <p class="quote-text">"Your services have been top notch so far!"</p>
+        <div class="quote-author">
+          <h5>Boston Weldings</h5>
+          <span>United States</span>
+        </div>
+      </div>
+      <div class="testimonial-card" data-reveal>
+        <svg class="quote-mark" viewBox="0 0 44 32" fill="currentColor"><path d="M0 32V16.7C0 6.6 6.8 0 17.6 0v6.4c-6 .3-9.5 3.6-9.9 8.6H14v17H0zm24 0V16.7C24 6.6 30.8 0 41.6 0v6.4c-6 .3-9.5 3.6-9.9 8.6H38v17H24z"/></svg>
+        <p class="quote-text">"Very professional, and the drawings came back cleaner than we expected."</p>
+        <div class="quote-author">
+          <h5>Client</h5>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="work" id="work">
+  <div class="wrap">
+    <div class="tag" data-reveal>Samples <span class="sheet-no">/ SHEET 04</span></div>
+    <h2 class="section-title" data-reveal>Shop drawings straight from our detailing floor.</h2>
+    <p class="section-sub" data-reveal>Real beam and column details, produced and checked in-house — the same level of accuracy every client project gets.</p>
+    <div class="sample-filters" data-reveal>
+      <div class="sample-filter active" data-filter="all">All Samples</div>
+      <div class="sample-filter" data-filter="beam">Beams</div>
+      <div class="sample-filter" data-filter="column">Columns</div>
+    </div>
+    <div class="sample-grid" id="sampleGrid">
+      <div class="sample-card" data-reveal data-type="beam">
+        <a href="images/samples/BEAM-1.jpg" target="_blank" class="sample-thumb"><img src="images/samples/BEAM-1.jpg" alt="Beam shop drawing sample 1"></a>
+        <div class="sample-info"><div><h5>Beam 1</h5><span>Shop Drawing</span></div>
+          <a href="images/samples/BEAM-1.jpg" download class="sample-download"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0l-4-4m4 4l4-4M5 21h14"/></svg></a>
+        </div>
+      </div>
+      <div class="sample-card" data-reveal data-type="beam">
+        <a href="images/samples/BEAM-2.jpg" target="_blank" class="sample-thumb"><img src="images/samples/BEAM-2.jpg" alt="Beam shop drawing sample 2"></a>
+        <div class="sample-info"><div><h5>Beam 2</h5><span>Shop Drawing</span></div>
+          <a href="images/samples/BEAM-2.jpg" download class="sample-download"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0l-4-4m4 4l4-4M5 21h14"/></svg></a>
+        </div>
+      </div>
+      <div class="sample-card" data-reveal data-type="beam">
+        <a href="images/samples/BEAM-3.jpg" target="_blank" class="sample-thumb"><img src="images/samples/BEAM-3.jpg" alt="Beam shop drawing sample 3"></a>
+        <div class="sample-info"><div><h5>Beam 3</h5><span>Shop Drawing</span></div>
+          <a href="images/samples/BEAM-3.jpg" download class="sample-download"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0l-4-4m4 4l4-4M5 21h14"/></svg></a>
+        </div>
+      </div>
+      <div class="sample-card" data-reveal data-type="beam">
+        <a href="images/samples/BEAM-4.jpg" target="_blank" class="sample-thumb"><img src="images/samples/BEAM-4.jpg" alt="Beam shop drawing sample 4"></a>
+        <div class="sample-info"><div><h5>Beam 4</h5><span>Shop Drawing</span></div>
+          <a href="images/samples/BEAM-4.jpg" download class="sample-download"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0l-4-4m4 4l4-4M5 21h14"/></svg></a>
+        </div>
+      </div>
+      <div class="sample-card" data-reveal data-type="beam">
+        <a href="images/samples/BEAM-5.jpg" target="_blank" class="sample-thumb"><img src="images/samples/BEAM-5.jpg" alt="Beam shop drawing sample 5"></a>
+        <div class="sample-info"><div><h5>Beam 5</h5><span>Shop Drawing</span></div>
+          <a href="images/samples/BEAM-5.jpg" download class="sample-download"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0l-4-4m4 4l4-4M5 21h14"/></svg></a>
+        </div>
+      </div>
+      <div class="sample-card" data-reveal data-type="column">
+        <a href="images/samples/COLUMN-1.jpg" target="_blank" class="sample-thumb"><img src="images/samples/COLUMN-1.jpg" alt="Column shop drawing sample 1"></a>
+        <div class="sample-info"><div><h5>Column 1</h5><span>Shop Drawing</span></div>
+          <a href="images/samples/COLUMN-1.jpg" download class="sample-download"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0l-4-4m4 4l4-4M5 21h14"/></svg></a>
+        </div>
+      </div>
+      <div class="sample-card" data-reveal data-type="column">
+        <a href="images/samples/COLUMN-2.jpg" target="_blank" class="sample-thumb"><img src="images/samples/COLUMN-2.jpg" alt="Column shop drawing sample 2"></a>
+        <div class="sample-info"><div><h5>Column 2</h5><span>Shop Drawing</span></div>
+          <a href="images/samples/COLUMN-2.jpg" download class="sample-download"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0l-4-4m4 4l4-4M5 21h14"/></svg></a>
+        </div>
+      </div>
+      <div class="sample-card" data-reveal data-type="column">
+        <a href="images/samples/COLUMN-3.jpg" target="_blank" class="sample-thumb"><img src="images/samples/COLUMN-3.jpg" alt="Column shop drawing sample 3"></a>
+        <div class="sample-info"><div><h5>Column 3</h5><span>Shop Drawing</span></div>
+          <a href="images/samples/COLUMN-3.jpg" download class="sample-download"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0l-4-4m4 4l4-4M5 21h14"/></svg></a>
+        </div>
+      </div>
+      <div class="sample-card" data-reveal data-type="column">
+        <a href="images/samples/COLUMN-4.jpg" target="_blank" class="sample-thumb"><img src="images/samples/COLUMN-4.jpg" alt="Column shop drawing sample 4"></a>
+        <div class="sample-info"><div><h5>Column 4</h5><span>Shop Drawing</span></div>
+          <a href="images/samples/COLUMN-4.jpg" download class="sample-download"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0l-4-4m4 4l4-4M5 21h14"/></svg></a>
+        </div>
+      </div>
+      <div class="sample-card" data-reveal data-type="column">
+        <a href="images/samples/COLUMN-5.jpg" target="_blank" class="sample-thumb"><img src="images/samples/COLUMN-5.jpg" alt="Column shop drawing sample 5"></a>
+        <div class="sample-info"><div><h5>Column 5</h5><span>Shop Drawing</span></div>
+          <a href="images/samples/COLUMN-5.jpg" download class="sample-download"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0l-4-4m4 4l4-4M5 21h14"/></svg></a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="team" id="team">
+  <div class="wrap">
+    <div class="tag" data-reveal>Leadership <span class="sheet-no">/ SHEET 05</span></div>
+    <h2 class="section-title" data-reveal>The people behind every drawing set.</h2>
+    <div class="team-grid">
+      <div class="team-card" data-reveal>
+        <div class="avatar"><img src="images/team/ainul.jpg" alt="Ainul Haque Khan"></div>
+        <div>
+          <h4>Ainul Haque Khan</h4>
+          <div class="role">Director</div>
+          <div class="links">
+            <a href="mailto:director@ahkinfra.com">director@ahkinfra.com</a>
+            <a href="tel:+919451786786">+91 9451 786786</a>
+          </div>
+        </div>
+      </div>
+      <div class="team-card" data-reveal>
+        <div class="avatar"><img src="images/team/faiz.jpg" alt="Mohammad Faiz"></div>
+        <div>
+          <h4>Mohammad Faiz</h4>
+          <div class="role">Technical Director</div>
+          <div class="links">
+            <a href="mailto:faizpm@ahkinfra.com">faizpm@ahkinfra.com</a>
+            <a href="tel:+917289909207">+91 7289 909207</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="stats-strip">
+  <div class="wrap stats-row" data-reveal>
+    <div><div class="stat-num" data-count="45">0</div><div class="stat-label">Projects</div></div>
+    <div><div class="stat-num" data-count="25">0</div><div class="stat-label">Buildings Detailed</div></div>
+    <div><div class="stat-num" data-count="30">0</div><div class="stat-label">Engineers</div></div>
+    <div><div class="stat-num" data-count="12">0</div><div class="stat-label">Happy Clients</div></div>
+  </div>
+</section>
+
+<div class="wrap">
+  <div class="cta-band corner-frame" data-reveal>
+    <div class="cta-bg"><img class="parallax-img" src="images/photo-cta.jpg" alt="Construction crane silhouetted against a golden sunset sky"></div>
+    <div class="cta-overlay"></div>
+    <div class="cta-content">
+      <h2>Bring your next steel project to our detailing team.</h2>
+      <p>Send us your drawings or scope, and we'll come back with a turnaround plan built around your deadline.</p>
+      <div class="btn-row">
+        <a href="#contact" class="btn btn-primary">Request a Quote →</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<section class="contact" id="contact">
+  <div class="wrap">
+    <div class="tag" data-reveal>Contact <span class="sheet-no">/ SHEET 06</span></div>
+    <h2 class="section-title" data-reveal>Two offices, one detailing standard.</h2>
+    <div class="contact-maps" data-reveal>
+      <div class="map-card">
+        <iframe src="https://www.google.com/maps?q=45+W+34th+St+Suite+1104+New+York+NY+10001&output=embed" loading="lazy" referrerpolicy="no-referrer-when-downgrade" allowfullscreen></iframe>
+        <h5>NEW YORK, USA</h5>
+      </div>
+      <div class="map-card">
+        <iframe src="https://www.google.com/maps?q=Janki+Plaza+Ring+Road+Lucknow+Uttar+Pradesh+226021&output=embed" loading="lazy" referrerpolicy="no-referrer-when-downgrade" allowfullscreen></iframe>
+        <h5>LUCKNOW, INDIA</h5>
+      </div>
+    </div>
+    <div class="contact-grid">
+      <div class="contact-cards" data-reveal>
+        <div class="contact-card">
+          <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg></div>
+          <div>
+            <h5>Phone</h5>
+            <a href="tel:+12019366146">Landline: +1 201-936-6146</a>
+            <a href="tel:+915224009529">Mobile: +91 522 400 9529</a>
+            <a href="tel:+919389995777">Mobile: +91 9389 995 777</a>
+          </div>
+        </div>
+        <div class="contact-card">
+          <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 6l-10 7L2 6"/><rect x="2" y="4" width="20" height="16" rx="2"/></svg></div>
+          <div>
+            <h5>Email</h5>
+            <a href="mailto:info@ahkinfra.com">info@ahkinfra.com</a>
+            <a href="mailto:director@ahkinfra.com">director@ahkinfra.com</a>
+          </div>
+        </div>
+        <div class="contact-card">
+          <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg></div>
+          <div>
+            <h5>New York, USA</h5>
+            <p>AHK Eng. Services LLC<br>45 W 34th St, Suite 1104<br>New York, NY 10001</p>
+          </div>
+        </div>
+        <div class="contact-card">
+          <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg></div>
+          <div>
+            <h5>Lucknow, India</h5>
+            <p>AHK Infra Enterprises Pvt Ltd<br>102–105, First Floor, Janki Plaza, Ring Road<br>Lucknow, Uttar Pradesh 226021</p>
+          </div>
+        </div>
+      </div>
+
+      <form class="contact-form" id="contactForm" data-reveal>
+        <h3>Send a project brief</h3>
+        <p class="hint">Tell us the scope and we'll reply with a turnaround estimate.</p>
+        <div class="form-row">
+          <input type="text" placeholder="Name" required>
+          <input type="email" placeholder="Email" required>
+        </div>
+        <input type="text" placeholder="Subject" required style="margin-bottom:14px;">
+        <textarea placeholder="Tell us about your project..." required></textarea>
+        <button type="submit" class="form-submit">Send Message</button>
+        <p class="form-note" id="formNote">Thanks — your message has been noted. We'll be in touch shortly.</p>
+      </form>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="foot-grid">
+      <div>
+        <div class="foot-logo">
+          <img src="images/logo.png" alt="AHK Infra logo">
+          AHK INFRA
+        </div>
+        <p style="font-size:13.5px; line-height:1.7; max-width:260px;">ISO 9001:2015 certified structural steel detailing, delivered by a team of talented engineers.</p>
+        <div class="social-row">
+          <a href="https://www.facebook.com/AHKINFRA" target="_blank" aria-label="Facebook"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M22 12a10 10 0 10-11.6 9.9v-7H7.9V12h2.5V9.8c0-2.5 1.5-3.9 3.8-3.9 1.1 0 2.2.2 2.2.2v2.5h-1.3c-1.2 0-1.6.8-1.6 1.6V12h2.8l-.4 2.9h-2.4v7A10 10 0 0022 12z"/></svg></a>
+          <a href="https://twitter.com/ahkinfra" target="_blank" aria-label="Twitter"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M22 5.9c-.7.3-1.5.6-2.3.7.8-.5 1.5-1.3 1.8-2.3-.8.5-1.7.8-2.6 1a4.1 4.1 0 00-7 3.7A11.7 11.7 0 013 4.9a4.1 4.1 0 001.3 5.5c-.7 0-1.3-.2-1.9-.5v.1c0 2 1.4 3.6 3.3 4a4.1 4.1 0 01-1.9.1 4.1 4.1 0 003.8 2.8A8.2 8.2 0 012 18.4a11.6 11.6 0 006.3 1.8c7.5 0 11.7-6.3 11.7-11.7v-.5c.8-.6 1.5-1.3 2-2.1z"/></svg></a>
+        </div>
+      </div>
+      <div>
+        <h5>Company</h5>
+        <ul><li><a href="#about">About</a></li><li><a href="#team">Leadership</a></li><li><a href="#standards">Standards</a></li></ul>
+      </div>
+      <div>
+        <h5>Services</h5>
+        <ul><li><a href="#services">Steel Detailing</a></li><li><a href="#services">3D Modelling</a></li><li><a href="#services">Shop Drawings</a></li></ul>
+      </div>
+      <div>
+        <h5>Contact</h5>
+        <ul><li><a href="mailto:info@ahkinfra.com">info@ahkinfra.com</a></li><li><a href="tel:+12019366146">+1 201-936-6146</a></li><li>New York · Lucknow</li></ul>
+      </div>
+    </div>
+    <div class="foot-bottom">
+      <span>© 2026 AHK Infra Engineering &amp; Services. All rights reserved.</span>
+      <span>ISO 9001:2015 Certified</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+  // Sticky header background on scroll
+  const header = document.getElementById('siteHeader');
+  window.addEventListener('scroll', () => {
+    header.classList.toggle('scrolled', window.scrollY > 40);
+  });
+
+  // Mobile nav toggle
+  const navToggle = document.getElementById('navToggle');
+  const navLinks = document.querySelector('.nav-links');
+  navToggle.addEventListener('click', () => {
+    const open = navLinks.style.display === 'flex';
+    navLinks.style.cssText = open ? 'display:none;' : 'display:flex; flex-direction:column; position:fixed; top:70px; right:20px; background:rgba(7,26,61,0.97); padding:20px 28px; border-radius:14px; gap:18px;';
+  });
+
+  // Scroll progress bar
+  const scrollProgress = document.getElementById('scrollProgress');
+  function updateScrollProgress(){
+    const h = document.documentElement;
+    const scrollable = h.scrollHeight - h.clientHeight;
+    scrollProgress.style.width = (scrollable > 0 ? (h.scrollTop / scrollable) * 100 : 0) + '%';
+  }
+  window.addEventListener('scroll', updateScrollProgress, {passive:true});
+  updateScrollProgress();
+
+  // Hero cursor glow
+  const heroSection = document.querySelector('.hero');
+  const heroGlow = document.getElementById('heroGlow');
+  if(heroSection && heroGlow && window.matchMedia('(hover: hover)').matches){
+    heroSection.addEventListener('mousemove', (e) => {
+      const r = heroSection.getBoundingClientRect();
+      heroGlow.style.setProperty('--mx', ((e.clientX - r.left) / r.width * 100) + '%');
+      heroGlow.style.setProperty('--my', ((e.clientY - r.top) / r.height * 100) + '%');
+    });
+  }
+
+  // Parallax on full-bleed photo bands
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const parallaxEls = document.querySelectorAll('.parallax-img');
+  let ticking = false;
+  function updateParallax(){
+    const vh = window.innerHeight;
+    parallaxEls.forEach(img=>{
+      const rect = img.parentElement.getBoundingClientRect();
+      if(rect.bottom < -100 || rect.top > vh + 100) return;
+      const center = (rect.top + rect.height/2) - vh/2;
+      const shift = Math.max(-70, Math.min(70, center * -0.12));
+      img.style.transform = `translateY(${shift}px)`;
+    });
+    ticking = false;
+  }
+  if(!reduceMotion && parallaxEls.length){
+    updateParallax();
+    window.addEventListener('scroll', () => {
+      if(!ticking){ requestAnimationFrame(updateParallax); ticking = true; }
+    }, {passive:true});
+    window.addEventListener('resize', updateParallax);
+  }
+
+  // Scroll reveal
+  const io = new IntersectionObserver((entries)=>{
+    entries.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); } });
+  }, {threshold:0.12});
+  document.querySelectorAll('[data-reveal]').forEach(el=>io.observe(el));
+
+  // Count-up stats
+  const countIO = new IntersectionObserver((entries)=>{
+    entries.forEach(entry=>{
+      if(entry.isIntersecting){
+        const el = entry.target;
+        const target = parseInt(el.dataset.count, 10);
+        const duration = 1100;
+        const start = performance.now();
+        function tick(now){
+          const p = Math.min((now-start)/duration, 1);
+          const eased = 1 - Math.pow(1-p, 3);
+          el.textContent = Math.round(eased*target) + (p===1 ? '+' : '');
+          if(p<1) requestAnimationFrame(tick);
+        }
+        requestAnimationFrame(tick);
+        countIO.unobserve(el);
+      }
+    });
+  }, {threshold:0.4});
+  document.querySelectorAll('.stat-num').forEach(el=>countIO.observe(el));
+
+  // Sample filters
+  const filters = document.querySelectorAll('.sample-filter');
+  const cards = document.querySelectorAll('.sample-card');
+  filters.forEach(f=>{
+    f.addEventListener('click', ()=>{
+      filters.forEach(x=>x.classList.remove('active'));
+      f.classList.add('active');
+      const type = f.dataset.filter;
+      cards.forEach(c=>{
+        c.style.display = (type==='all' || c.dataset.type===type) ? '' : 'none';
+      });
+    });
+  });
+
+  // Contact form (front-end only demo)
+  const form = document.getElementById('contactForm');
+  const note = document.getElementById('formNote');
+  form.addEventListener('submit', function(e){
+    e.preventDefault();
+    note.classList.add('show');
+    form.reset();
+  });
+</script>
+
+</body>
+</html>
